@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>রেফারেল ট্র্যাকার | Bᴋᴀsʜ MᴏɴᴇY Cᴀsʜ</title>
+    
+    <!-- Telegram Web App & Firebase Libraries -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Tailwind CSS & Font Awesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bkash-pink: #E2136E; 
+            --bkash-dark: #C10F5D;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+        }
+        body { 
+            font-family: 'Hind Siliguri', 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); 
+            color: #1e293b; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .glass { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .btn-press:active { transform: scale(0.95); transition: transform 0.1s; }
+
+        .input-with-icon { position: relative; }
+        .input-with-icon i { 
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%); 
+            color: #94a3b8; font-size: 16px; transition: color 0.3s;
+        }
+        .input-with-icon input:focus + i { color: var(--bkash-pink); }
+        .input-with-icon input { padding-left: 44px; }
+
+        ::-webkit-scrollbar { width: 0px; }
+    </style>
+</head>
+<body class="h-screen flex justify-center">
+
+    <div class="w-full max-w-md h-full bg-[#f8fafc] relative shadow-2xl flex flex-col overflow-hidden">
+        
+        <!-- Header with Back Button -->
+        <div class="glass px-6 py-4 flex items-center justify-between z-40 absolute top-0 left-0 w-full rounded-b-[2rem] shadow-[0_10px_30px_rgba(226,19,110,0.06)] border-b border-white/60 bg-white/95">
+            <div class="flex items-center gap-4">
+                <button onclick="goBack()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 btn-press shadow-sm border border-slate-200 hover:bg-slate-100 hover:text-[#E2136E] transition">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <h1 class="font-extrabold text-slate-800 text-[18px] tracking-tight">রেফারেল ট্র্যাকার</h1>
+                    <p class="text-[10px] font-bold text-emerald-500 flex items-center gap-1.5 mt-0.5 uppercase tracking-widest">
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i> লাইভ আপডেট
+                    </p>
+                </div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-[#E2136E] border border-pink-100 shadow-sm animate-pulse">
+                <i class="fa-solid fa-users text-lg"></i>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-y-auto pt-24 pb-10 px-5 relative z-10">
+            
+            <!-- Summary Stats Card Grid -->
+            <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="glass p-3.5 rounded-2xl text-center border border-slate-100 shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mx-auto mb-1.5 shadow-inner">
+                        <i class="fa-solid fa-users text-xs"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase">মোট রেফার</p>
+                    <h3 id="stat-total-referrals" class="text-lg font-extrabold text-slate-800 font-inter mt-0.5">0</h3>
+                </div>
+
+                <div class="glass p-3.5 rounded-2xl text-center border border-slate-100 shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto mb-1.5 shadow-inner">
+                        <i class="fa-solid fa-user-check text-xs"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase">অ্যাক্টিভ</p>
+                    <h3 id="stat-active-referrals" class="text-lg font-extrabold text-emerald-600 font-inter mt-0.5">0</h3>
+                </div>
+
+                <div class="glass p-3.5 rounded-2xl text-center border border-slate-100 shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-1.5 shadow-inner">
+                        <i class="fa-solid fa-user-clock text-xs"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase">ইন-অ্যাক্টিভ</p>
+                    <h3 id="stat-inactive-referrals" class="text-lg font-extrabold text-amber-600 font-inter mt-0.5">0</h3>
+                </div>
+            </div>
+
+            <!-- Total Earnings Summary Card -->
+            <div class="glass bg-gradient-to-r from-[#E2136E] to-[#C10F5D] rounded-[1.5rem] p-5 text-white mb-6 shadow-lg shadow-pink-500/20 relative overflow-hidden">
+                <div class="flex justify-between items-center relative z-10">
+                    <div>
+                        <p class="text-[11px] font-medium text-white/80 uppercase tracking-wider">রেফার থেকে অর্জিত মোট আয়</p>
+                        <h2 class="text-3xl font-extrabold font-inter mt-1">৳ <span id="stat-total-earned">0.00</span></h2>
+                    </div>
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20">
+                        <i class="fa-solid fa-hand-holding-dollar text-2xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar Section -->
+            <div class="glass bg-white rounded-2xl p-3 shadow-sm border border-slate-100 mb-6">
+                <div class="input-with-icon flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <input type="text" id="search-user-id" placeholder="আইডি (User ID) দিয়ে খুঁজুন..." class="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pr-4 text-[13px] focus:outline-none focus:border-[#E2136E] focus:bg-white transition font-inter text-slate-800">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <button onclick="searchReferral()" class="bg-[#E2136E] text-white font-bold h-12 px-5 rounded-xl btn-press text-[13px] shadow-md shadow-pink-500/20">
+                        খুঁজুন
+                    </button>
+                </div>
+            </div>
+
+            <!-- History Header -->
+            <div class="flex justify-between items-center mb-3.5 px-1">
+                <h3 class="font-bold text-slate-800 text-[15px] flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-[#E2136E]"></i> রেফারেল হিস্ট্রি
+                </h3>
+                <span class="text-[11px] font-bold text-slate-400" id="referral-list-count">মোট 0 টি</span>
+            </div>
+
+            <!-- Referrals List / History Container -->
+            <div id="referrals-container" class="space-y-3">
+                <div class="text-center py-10 glass rounded-2xl border border-slate-100">
+                    <i class="fa-solid fa-spinner fa-spin text-[#E2136E] text-2xl mb-2"></i>
+                    <p class="text-xs text-slate-500 font-medium">ডাটা লোড হচ্ছে...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-[-60px] left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-5 py-3.5 rounded-full shadow-2xl transition-all duration-400 z-[140] flex items-center gap-3 min-w-[220px] justify-center border border-slate-700">
+        <div class="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+            <i id="toast-icon" class="fa-solid fa-check text-[#E2136E] text-sm"></i>
+        </div>
+        <span id="toast-msg" class="font-bold text-[14px] tracking-wide">সফল হয়েছে</span>
+    </div>
+
+    <script>
+        // Firebase Configuration (Matching existing setup)
+        const firebaseConfig = {
+  apiKey: "AIzaSyBSjMxB2oSvnLyIqmwdRO9U39KpxjfQCyE",
+  authDomain: "bkash-pay-e7a90.firebaseapp.com",
+  projectId: "bkash-pay-e7a90",
+  storageBucket: "bkash-pay-e7a90.firebasestorage.app",
+  messagingSenderId: "257268477440",
+  appId: "1:257268477440:web:8bedccfb67f0b54617f2e5",
+  measurementId: "G-CN256608QW"
+};
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        const tg = window.Telegram.WebApp;
+
+        let currentUser = tg.initDataUnsafe?.user || { id: 123456, username: "Tester" };
+        let allReferralsData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            tg.expand();
+            tg.setHeaderColor('#ffffff');
+            tg.setBackgroundColor('#f8fafc');
+
+            // Auth Check
+            auth.onAuthStateChanged((firebaseUser) => {
+                if (!firebaseUser) {
+                    window.location.href = 'auth.html';
+                } else {
+                    loadReferralData();
+                }
+            });
+        });
+
+        // Navigation function for safely going back to previous page
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Firestore real-time listener & query execution
+        function loadReferralData() {
+            const currentUserId = currentUser.id.toString();
+
+            // Fetch referred users from 'users' collection where 'referredBy' == currentUserId
+            db.collection('users')
+                .where('referredBy', '==', currentUserId)
+                .onSnapshot(snapshot => {
+                    allReferralsData = [];
+                    let totalCount = 0;
+                    let activeCount = 0;
+                    let inactiveCount = 0;
+                    let totalEarning = 0;
+
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        totalCount++;
+                        
+                        const isActive = data.isActive === true;
+                        if (isActive) {
+                            activeCount++;
+                            totalEarning += parseFloat(data.referralBonusGiven || 2.00); 
+                        } else {
+                            inactiveCount++;
+                        }
+
+                        allReferralsData.push({
+                            id: doc.id,
+                            username: data.username || "ব্যবহারকারী",
+                            email: data.email || "N/A",
+                            isActive: isActive,
+                            earned: isActive ? (data.referralBonusGiven || 2.00) : 0,
+                            joinedAt: data.joinedAt ? new Date(data.joinedAt.seconds * 1000).toLocaleDateString('bn-BD') : "সাম্প্রতিক"
+                        });
+                    });
+
+                    // Update UI Statistics
+                    document.getElementById('stat-total-referrals').innerText = totalCount;
+                    document.getElementById('stat-active-referrals').innerText = activeCount;
+                    document.getElementById('stat-inactive-referrals').innerText = inactiveCount;
+                    document.getElementById('stat-total-earned').innerText = totalEarning.toFixed(2);
+                    document.getElementById('referral-list-count').innerText = `মোট ${totalCount} টি`;
+
+                    renderReferralsList(allReferralsData);
+                }, error => {
+                    showToast("ডাটা লোড করতে সমস্যা হয়েছে!", "error");
+                    renderReferralsList([]);
+                });
+        }
+
+        // Render Referral Cards inside list container
+        function renderReferralsList(list) {
+            const container = document.getElementById('referrals-container');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 glass rounded-2xl border border-slate-100">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                            <i class="fa-solid fa-users-slash text-xl"></i>
+                        </div>
+                        <p class="text-xs text-slate-500 font-medium">কোনো রেফারেল পাওয়া যায়নি</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between";
+                
+                const statusBadge = item.isActive 
+                    ? `<span class="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"><i class="fa-solid fa-circle-check text-[9px]"></i> অ্যাক্টিভ</span>`
+                    : `<span class="bg-amber-50 text-amber-600 border border-amber-100 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"><i class="fa-solid fa-clock text-[9px]"></i> ইন-অ্যাক্টিভ</span>`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full ${item.isActive ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'} flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="font-bold text-slate-800 text-[13px] font-inter">${item.username}</h4>
+                            </div>
+                            <p class="text-[10px] font-medium text-slate-400 font-inter mt-0.5">ID: ${item.id}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">যোগদান: ${item.joinedAt}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        ${statusBadge}
+                        <p class="text-[12px] font-extrabold text-slate-700 font-inter mt-1.5">
+                            +৳ <span class="${item.isActive ? 'text-emerald-600' : 'text-slate-400'}">${item.earned.toFixed(2)}</span>
+                        </p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Search by User ID
+        function searchReferral() {
+            const query = document.getElementById('search-user-id').value.trim();
+            if (!query) {
+                renderReferralsList(allReferralsData);
+                return;
+            }
+
+            const filtered = allReferralsData.filter(item => 
+                item.id.toLowerCase().includes(query.toLowerCase()) || 
+                item.username.toLowerCase().includes(query.toLowerCase())
+            );
+
+            renderReferralsList(filtered);
+
+            if(filtered.length === 0) {
+                showToast("এই আইডি দিয়ে কোনো ইউজার পাওয়া যায়নি", "info");
+            }
+        }
+
+        // Toast Notification System
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            const icon = document.getElementById('toast-icon');
+            
+            if(type === 'error') {
+                icon.className = 'fa-solid fa-xmark text-red-500 text-lg';
+            } else if(type === 'info') {
+                icon.className = 'fa-solid fa-info text-blue-500 text-lg';
+            } else {
+                icon.className = 'fa-solid fa-check text-[#E2136E] text-lg';
+            }
+            
+            t.style.top = '30px';
+            setTimeout(() => t.style.top = '-80px', 3000);
+        }
+    </script>
+</body>
+</html>
